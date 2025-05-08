@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Swiggy Clone - Food Ordering</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap');
+  * {
+    box-sizing: border-box;
+  }
+  body {
+    margin: 0;
+    font-family: 'Montserrat', sans-serif;
+    background-color: #fafafa;
+    color: #222;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+  header {
+    background: #fc8019;
+    color: white;
+    padding: 1.5rem;
+    text-align: center;
+    font-weight: 700;
+    font-size: 1.8rem;
+    letter-spacing: 2px;
+  }
+  main {
+    flex: 1;
+    padding: 1rem;
+    max-width: 900px;
+    margin: 0 auto;
+    width: 100%;
+  }
+  .food-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit,minmax(230px,1fr));
+    gap: 1rem;
+  }
+  .card {
+    background: white;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 6px 12px rgba(252, 128, 25, 0.2);
+    display: flex;
+    flex-direction: column;
+    transition: transform 0.3s ease;
+  }
+  .card:hover {
+    transform: translateY(-6px);
+  }
+  .card img {
+    width: 100%;
+    height: 160px;
+    object-fit: cover;
+  }
+  .card-body {
+    padding: 1rem;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+  .card-title {
+    font-weight: 700;
+    font-size: 1.2rem;
+    margin-bottom: 0.5rem;
+    color: #fc8019;
+  }
+  .card-description {
+    font-size: 0.9rem;
+    color: #666;
+    margin-bottom: 0.5rem;
+  }
+  .card-price {
+    font-weight: 700;
+    color: #444;
+    margin-bottom: 0.7rem;
+  }
+  button.add-to-cart {
+    align-self: stretch;
+    background: #fc8019;
+    border: none;
+    color: white;
+    font-weight: 600;
+    padding: 0.6rem;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: background 0.3s ease;
+  }
+  button.add-to-cart:hover {
+    background: #e6710b;
+  }
+  .cart-button {
+    position: fixed;
+    bottom: 25px;
+    right: 25px;
+    background: #fc8019;
+    border: none;
+    color: white;
+    border-radius: 50%;
+    width: 60px;
+    height: 60px;
+    font-size: 1.3rem;
+    box-shadow: 0 6px 14px rgba(252,128,25,0.3);
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  .cart-count {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    background: #e63946;
+    font-size: 0.75rem;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    color: white;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  /* Cart sidebar */
+  .cart-sidebar {
+    position: fixed;
+    top: 0;
+    right: -100%;
+    width: 320px;
+    max-width: 90vw;
+    height: 100vh;
+    background: white;
+    box-shadow: -5px 0 16px rgba(0,0,0,0.2);
+    padding: 1rem 1.2rem;
+    display: flex;
+    flex-direction: column;
+    transition: right 0.3s ease;
+    z-index: 9999;
+  }
+  .cart-sidebar.open {
+    right: 0;
+  }
+  .cart-sidebar header {
+    font-weight: 700;
+    font-size: 1.3rem;
+    color: #fc8019;
+    text-align: center;
+    margin-bottom: 1rem;
+    position: relative;
+  }
+  .close-cart {
+    cursor: pointer;
+    position: absolute;
+    right: 0;
+    top: 0;
+    font-weight: 700;
+    font-size: 1.6rem;
+    border: none;
+    background: transparent;
+    color: #fc8019;
+  }
+  .cart-items {
+    flex-grow: 1;
+    overflow-y: auto;
+  }
+  .cart-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.4rem 0;
+    border-bottom: 1px solid #eee;
+  }
+  .cart-item-info {
+    flex: 1;
+  }
+  .cart-item-name {
+    font-weight: 600;
+    color: #333;
+  }
+  .cart-item-qty {
+    font-size: 0.85rem;
+    color: #666;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .qty-btn {
+    background: #fc8019;
+    border: none;
+    color: white;
+    font-weight: 700;
+    border-radius: 3px;
+    width: 24px;
+    height: 24px;
+    cursor: pointer;
+    line-height: 0;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+  }
+  .cart-item-price {
+    font-weight: 700;
+    color: #fc8019;
+    white-space: nowrap;
+  }
+  .cart-footer {
+    padding-top: 1rem;
+    border-top: 2px solid #fc8019;
+  }
+  .total {
+    display: flex;
+    justify-content: space-between;
+    font-weight: 700;
+    font-size: 1.1rem;
+    margin-bottom: 1rem;
+  }
+  .checkout-btn {
+    background: #e63946;
+    border: none;
+    border-radius: 6px;
+    color: white;
+    font-weight: 700;
+    padding: 0.8rem 0;
+    cursor: pointer;
+    width: 100%;
+    font-size: 1.1rem;
+    transition: background 0.3s ease;
+  }
+  .checkout-btn:hover {
+    background: #b82c38;
+  }
+  /* Checkout screen */
+  .checkout-screen {
+    display: none;
+    flex-direction: column;
+  }
+  .checkout-screen.active {
+    display: flex;
+  }
+  .checkout-screen h2 {
+    color: #fc8019;
+    margin-bottom: 1rem;
+    text-align: center;
+  }
+  label {
+    font-weight: 600;
+    margin: 0.5rem 0 0.2rem;
+  }
+  input, select {
+    padding: 0.5rem;
+    font-size: 1rem;
+    border: 2px solid #fc8019;
+    border-radius: 6px;
+    margin-bottom: 1rem;
+    outline: none;
+    width: 100%;
+  }
+  input:focus, select:focus {
+    border-color: #e63946;
+  }
+  .payment-status {
+    font-weight: 700;
+    margin-top: 1rem;
+    text-align: center;
+  }
+  /* Responsive */
+  @media (max-width: 400px) {
+    .card img {
+      height: 140px;
+    }
+  }
+</style>
+</head>
+<body>
+<header>Swiggy Clone - Order Food Online</header>
+<main>
+  <div id="food-list" class="food-list"></div>
+</main>
+
+<button class="cart-button" id="cartBtn" aria-label="Open cart">
+  🛒
+  <span class="cart-count" id="cartCount" aria-live="polite">0</span>
+</button>
+
+<aside class="cart-sidebar" id="cartSidebar" aria-label="Shopping cart" role="region" aria-live="polite">
+  <header>
+    Your Cart
+    <button class="close-cart" id="closeCartBtn" aria-label="Close cart">&times;</button>
+  </header>
+  <div class="cart-items" id="cartItems"></div>
+
+  <div class="cart-footer" id="cartFooter">
+    <div class="total">Total: ₹<span id="cartTotal">0</span></div>
+    <button class="checkout-btn" id="checkoutBtn">Checkout</button>
+  </div>
+
+  <div class="checkout-screen" id="checkoutScreen" aria-live="assertive">
+    <h2>Payment</h2>
+    <form id="paymentForm" novalidate>
+      <label for="name">Name on Card</label>
+      <input type="text" id="name" name="name" placeholder="John Doe" required />
+
+      <label for="cardNumber">Card Number</label>
+      <input type="text" id="cardNumber" name="cardNumber" placeholder="1234 5678 9012 3456" pattern="\\d{16}" maxlength="16" required />
+
+      <label for="expiry">Expiry Date</label>
+      <input type="month" id="expiry" name="expiry" required />
+
+      <label for="cvv">CVV</label>
+      <input type="password" id="cvv" name="cvv" pattern="\\d{3,4}" maxlength="4" required />
+
+      <button type="submit" class="checkout-btn">Pay ₹<span id="paymentTotal">0</span></button>
+    </form>
+    <div class="payment-status" id="paymentStatus"></div>
+    <button class="checkout-btn" id="backToCartBtn" style="margin-top: 1rem; background:#fc8019;">Back to Cart</button>
+  </div>
+</aside>
+
+<script>
+  const foodItems = [
+    {
+      id: 1,
+      name: "Classic Margherita Pizza",
+      description: "Fresh tomatoes, mozzarella cheese, and basil leaves",
+      price: 299,
+      image: "https://images.unsplash.com/photo-1601924582975-dba4cd316edc?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+    },
+    {
+      id: 2,
+      name: "Veggie Burger",
+      description: "Delicious vegetable patty with fresh veggies inside a bun",
+      price: 199,
+      image: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+    },
+    {
+      id: 3,
+      name: "Sushi Platter",
+      description: "Assorted fresh sushi rolls for seafood lovers",
+      price: 499,
+      image: "https://images.unsplash.com/photo-1553621042-f6e147245754?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+    },
+    {
+      id: 4,
+      name: "Pasta Alfredo",
+      description: "Creamy white sauce pasta with mushrooms and herbs",
+      price: 349,
+      image: "https://images.unsplash.com/photo-1590080877777-c69db8c738c5?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+    },
+    {
+      id: 5,
+      name: "Chocolate Brownie",
+      description: "Rich chocolate brownie topped with pecans",
+      price: 149,
+      image: "https://images.unsplash.com/photo-1578985545062-69928b1d9587?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+    },
+    {
+      id: 6,
+      name: "Caesar Salad",
+      description: "Fresh romaine lettuce with Caesar dressing and croutons",
+      price: 229,
+      image: "https://images.unsplash.com/photo-1572441710421-2131aefbfd7d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+    }
+  ];
+
+  let cart = JSON.parse(localStorage.getItem('swiggy-cart')) || {};
+
+  const foodListEl = document.getElementById('food-list');
+  const cartBtn = document.getElementById('cartBtn');
+  const cartSidebar = document.getElementById('cartSidebar');
+  const closeCartBtn = document.getElementById('closeCartBtn');
+  const cartItemsEl = document.getElementById('cartItems');
+  const cartCountEl = document.getElementById('cartCount');
+  const cartTotalEl = document.getElementById('cartTotal');
+  const checkoutBtn = document.getElementById('checkoutBtn');
+  const cartFooter = document.getElementById('cartFooter');
+  const checkoutScreen = document.getElementById('checkoutScreen');
+  const paymentForm = document.getElementById('paymentForm');
+  const paymentTotalEl = document.getElementById('paymentTotal');
+  const paymentStatusEl = document.getElementById('paymentStatus');
+  const backToCartBtn = document.getElementById('backToCartBtn');
+
+  function renderFoodList() {
+    foodItems.forEach(item => {
+      const card = document.createElement('div');
+      card.className = 'card';
+      card.innerHTML = `
+        <img src="${item.image}" alt="${item.name}" />
+        <div class="card-body">
+          <div>
+            <div class="card-title">${item.name}</div>
+            <div class="card-description">${item.description}</div>
+            <div class="card-price">₹${item.price}</div>
+          </div>
+          <button class="add-to-cart" data-id="${item.id}">Add to Cart</button>
+        </div>
+      `;
+      foodListEl.appendChild(card);
+    });
+  }
+
+  function saveCart() {
+    localStorage.setItem('swiggy-cart', JSON.stringify(cart));
+  }
+
+  function updateCartCount() {
+    const count = Object.values(cart).reduce((sum, i) => sum + i.qty, 0);
+    cartCountEl.textContent = count;
+  }
+
+  function renderCart() {
+    cartItemsEl.innerHTML = '';
+    if (Object.keys(cart).length === 0) {
+      cartItemsEl.innerHTML = '<p>Your cart is empty</p>';
+      cartTotalEl.textContent = '0';
+      checkoutBtn.disabled = true;
+      return;
+    }
+    checkoutBtn.disabled = false;
+    let total = 0;
+    Object.values(cart).forEach(item => {
+      const foodItem = foodItems.find(f => f.id === item.id);
+      const itemTotal = item.qty * foodItem.price;
+      total += itemTotal;
+      const cartItemEl = document.createElement('div');
+      cartItemEl.className = 'cart-item';
+      cartItemEl.innerHTML = `
+        <div class="cart-item-info">
+          <div class="cart-item-name">${foodItem.name}</div>
+          <div class="cart-item-qty">
+            <button class="qty-btn" data-action="decrement" data-id="${item.id}">-</button>
+            ${item.qty}
+            <button class="qty-btn" data-action="increment" data-id="${item.id}">+</button>
+          </div>
+        </div>
+        <div class="cart-item-price">₹${itemTotal}</div>
+      `;
+      cartItemsEl.appendChild(cartItemEl);
+    });
+    cartTotalEl.textContent = total.toFixed(0);
+    paymentTotalEl.textContent = total.toFixed(0);
+  }
+
+  function addToCart(id) {
+    if (cart[id]) {
+      cart[id].qty++;
+    } else {
+      cart[id] = { id, qty: 1 };
+    }
+    saveCart();
+    updateCartCount();
+  }
+
+  function changeQuantity(id, action) {
+    if (!cart[id]) return;
+    if (action === 'increment') {
+      cart[id].qty++;
+    }
+    if (action === 'decrement') {
+      cart[id].qty--;
+      if (cart[id].qty <= 0) {
+        delete cart[id];
+      }
+    }
+    saveCart();
+    renderCart();
+    updateCartCount();
+  }
+
+  function openCart() {
+    cartSidebar.classList.add('open');
+  }
+  function closeCart() {
+    cartSidebar.classList.remove('open');
+    resetCheckout();
+  }
+  function openCheckout() {
+    cartFooter.style.display = 'none';
+    checkoutScreen.classList.add('active');
+    paymentStatusEl.textContent = '';
+    paymentForm.reset();
+  }
+  function resetCheckout() {
+    cartFooter.style.display = 'block';
+    checkoutScreen.classList.remove('active');
+  }
+
+  // Event Listeners
+  foodListEl.addEventListener('click', e => {
+    if (e.target.classList.contains('add-to-cart')) {
+      const id = e.target.getAttribute('data-id');
+      addToCart(id);
+    }
+  });
+
+  cartBtn.addEventListener('click', () => {
+    renderCart();
+    openCart();
+  });
+  closeCartBtn.addEventListener('click', () => {
+    closeCart();
+  });
+
+  cartItemsEl.addEventListener('click', e => {
+    if (e.target.classList.contains('qty-btn')) {
+      const id = e.target.getAttribute('data-id');
+      const action = e.target.getAttribute('data-action');
+      changeQuantity(id, action);
+    }
+  });
+
+  checkoutBtn.addEventListener('click', () => {
+    openCheckout();
+  });
+
+  paymentForm.addEventListener('submit', e => {
+    e.preventDefault();
+    // Basic form validation is handled by HTML5, so here just simulate payment delay
+    paymentStatusEl.style.color = '#444';
+    paymentStatusEl.textContent = 'Processing payment...';
+    paymentForm.querySelector('button[type=submit]').disabled = true;
+
+    setTimeout(() => {
+      paymentStatusEl.style.color = 'green';
+      paymentStatusEl.textContent = 'Payment Successful! Thank you for your order.';
+      paymentForm.querySelector('button[type=submit]').disabled = false;
+      // Clear cart
+      cart = {};
+      saveCart();
+      updateCartCount();
+      renderCart();
+    }, 2500);
+  });
+
+  backToCartBtn.addEventListener('click', () => {
+    resetCheckout();
+  });
+
+  // Initialize
+  renderFoodList();
+  updateCartCount();
+</script>
+</body>
+</html>
+</content>
+</create_file>
+
